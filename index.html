@@ -144,12 +144,13 @@ document.getElementById("total").innerText = total.toFixed(2);
 }
 
 function enviarWhatsapp(){
-let cliente=document.getElementById("cliente").value;
 let socio=document.getElementById("socio").value;
-let correo=document.getElementById("correo").value;
-let total=document.getElementById("total").innerText;
+let fecha=document.getElementById("fecha").value;
 
-let mensaje=`Hola, quiero realizar este pedido Verenize:%0A%0A`;
+mensaje+=`Socio comercial: ${socio}%0A`;
+mensaje+=`Fecha: ${fecha}%0A%0A`;
+
+let mensaje=`Hola, quiero realizar este pedido:%0A%0A`;
 mensaje+=`Cliente: ${cliente}%0A`;
 mensaje+=`Socio comercial: ${socio}%0A`;
 mensaje+=`Correo: ${correo}%0A%0A`;
