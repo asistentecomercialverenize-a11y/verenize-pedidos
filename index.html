@@ -133,7 +133,7 @@ if(p[4] && cantPzas > 0){
 totalPzas = totalPzas * 0.90;
 }
 
-let totalCajas = cantCajas * p[1];
+let totalCajas = cantCajas * p[1] * p[3];
 let importe = totalPzas + totalCajas;
 
 document.getElementById(`importe${i}`).innerText = importe.toFixed(2);
