@@ -4,144 +4,181 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pedidos Verenize</title>
-
 <style>
-body{
-    font-family: Arial, sans-serif;
-    background:#f5f5f5;
-    margin:0;
-    padding:20px;
-}
-
-.container{
-    max-width:900px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:10px;
-}
-
-h1{
-    text-align:center;
-}
-
-.producto{
-    border:1px solid #ddd;
-    padding:15px;
-    margin-bottom:10px;
-    border-radius:8px;
-}
-
-button{
-    background:#25D366;
-    color:white;
-    border:none;
-    padding:10px 15px;
-    border-radius:5px;
-    cursor:pointer;
-}
-
-#carrito{
-    margin-top:20px;
-    padding:15px;
-    background:#fafafa;
-    border-radius:8px;
-}
-
-.enviar{
-    width:100%;
-    font-size:18px;
+body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px}
+.container{max-width:1200px;margin:auto;background:white;padding:20px;border-radius:12px}
+h1{text-align:center}
+.datos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+input{padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;box-sizing:border-box}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border:1px solid #ddd;padding:6px;text-align:center}
+th{background:#f0f0f0}
+img{width:45px;height:45px;object-fit:cover;border-radius:6px;background:#eee}
+.total-box{text-align:right;font-size:22px;font-weight:bold;margin-top:20px}
+button{background:#25D366;color:white;border:0;padding:12px 20px;border-radius:8px;font-size:16px;cursor:pointer;margin-top:15px}
+.limpiar{background:#777}
+@media(max-width:800px){
+.datos{grid-template-columns:1fr}
+table{font-size:11px}
 }
 </style>
 </head>
-
 <body>
 
 <div class="container">
+<h1>Formato de Pedido Verenize</h1>
 
-<h1>Pedidos Verenize</h1>
-
-<div class="producto">
-    <h3>Shampoo Rizos</h3>
-    <p>$250</p>
-    <button onclick="agregar('Shampoo Rizos',250)">
-        Agregar
-    </button>
+<div class="datos">
+<input id="cliente" placeholder="Nombre del cliente">
+<input id="socio" placeholder="Socio comercial">
+<input id="correo" placeholder="Correo">
 </div>
 
-<div class="producto">
-    <h3>Mascarilla Rizos</h3>
-    <p>$350</p>
-    <button onclick="agregar('Mascarilla Rizos',350)">
-        Agregar
-    </button>
+<table>
+<thead>
+<tr>
+<th>Foto</th>
+<th>Producto</th>
+<th>Precio Caja</th>
+<th>Precio Pieza</th>
+<th>Pzas x Caja</th>
+<th>Cant. Pzas</th>
+<th>Cant. Cajas</th>
+<th>Desc.</th>
+<th>Importe</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+
+<div class="total-box">
+TOTAL: $<span id="total">0.00</span>
 </div>
 
-<div id="carrito">
-<h2>Carrito</h2>
-
-<ul id="lista"></ul>
-
-<h3>Total: $<span id="total">0</span></h3>
-
-<button class="enviar" onclick="enviarWhatsapp()">
-Enviar pedido por WhatsApp
-</button>
-
-</div>
-
+<button onclick="enviarWhatsapp()">Enviar pedido por WhatsApp</button>
+<button class="limpiar" onclick="limpiar()">Limpiar pedido</button>
 </div>
 
 <script>
+const whatsapp = "526623641909";
 
-let carrito=[];
-let total=0;
+const productos = [
+["Tratamiento de Keratina VP8 1000 ml",1800,2500,16,true],
+["Tratamiento de Keratina VP12 1000 ml",1800,2500,16,true],
+["Kit de Keratina Brasileña 300 ml",800,1200,24,true],
+["Kit de Keratina Brasileña 100 ml",350,350,96,false],
+["Vereplex Pro No. 1 500 ml",280,360,48,true],
+["Kit Vereplex 500 ml",800,1200,24,false],
+["Vereplex Pro No. 2 500 ml",250,350,24,true],
+["Shampoo Purificante 1000 ml",350,416,16,true],
+["Shampoo de Mantenimiento 500 ml",160,200,36,true],
+["Acondicionador de Mantenimiento 500 ml",160,200,36,true],
+["Shampoo de Mantenimiento 1000 ml",280,360,16,true],
+["Acondicionador de Mantenimiento 1000 ml",280,360,16,true],
+["Kit de Mantenimiento 1000 ml",450,616,16,true],
+["Kit de Mantenimiento 500 ml",290,360,36,true],
+["Kit de Mantenimiento 100 ml",120,120,96,false],
+["Tratamiento Sérum de Argán 100 ml",200,280,48,true],
+["Tratamiento Sérum de Argán 50 ml",120,120,63,false],
+["Tratamiento Leave In 300 ml",150,200,48,true],
+["Tratamiento Leave In 100 ml",85,85,96,false],
+["Crema Hidratante para Rizos 300 ml",130,190,48,true],
+["Gel Hidratante para Rizos 300 ml",145,200,48,true],
+["Shot de Reparación Instantánea 12 ml",80,80,48,false],
+["Caja Shot de Reparación Instantánea",360,480,36,false],
+["Secadora V LUX NEGRA",2500,3150,10,true],
+["Secadora V LUX BLANCA",2500,3150,10,true],
+["Plancha de Titanio",1200,1575,20,true],
+["Peine de Carbón",25,42,50,true],
+["Cepillo Cuadrado",100,140,12,true],
+["Cepillo Redondo",160,200,10,true],
+["Brocha",25,42,50,true],
+["Kimono",250,350,20,false],
+["Mascarilla Mágica Nutritiva 100 ml",85,120,96,true],
+["Tratamiento Sérum de Argán 50 ml",120,150,96,true],
+["Mascarilla Mágica Nutritiva 500 ml",210,294,24,true],
+["Set de Viaje para Cuidado del Cabello",480,580,10,false],
+["Kit Vereplex PRO Sachet 30 ml",70,90,1,false]
+];
 
-function agregar(nombre,precio){
+function cargarTabla(){
+const tabla=document.getElementById("tabla");
+tabla.innerHTML="";
 
-carrito.push({
-nombre:nombre,
-precio:precio
+productos.forEach((p,i)=>{
+tabla.innerHTML += `
+<tr>
+<td><img src="https://via.placeholder.com/80?text=V"></td>
+<td style="text-align:left">${p[0]}</td>
+<td>$${p[1]}</td>
+<td>$${p[2]}</td>
+<td>${p[3]}</td>
+<td><input type="number" min="0" value="0" id="pzas${i}" oninput="calcular()"></td>
+<td><input type="number" min="0" value="0" id="cajas${i}" oninput="calcular()"></td>
+<td>${p[4] ? "10%" : "-"}</td>
+<td>$<span id="importe${i}">0.00</span></td>
+</tr>`;
 });
-
-total+=precio;
-
-mostrar();
 }
 
-function mostrar(){
+function calcular(){
+let total=0;
 
-let lista=document.getElementById("lista");
+productos.forEach((p,i)=>{
+let cantPzas = Number(document.getElementById(`pzas${i}`).value) || 0;
+let cantCajas = Number(document.getElementById(`cajas${i}`).value) || 0;
 
-lista.innerHTML="";
+let totalPzas = cantPzas * p[2];
+if(p[4] && cantPzas > 0){
+totalPzas = totalPzas * 0.90;
+}
 
-carrito.forEach(item=>{
+let totalCajas = cantCajas * p[1];
+let importe = totalPzas + totalCajas;
 
-lista.innerHTML+=`<li>${item.nombre} - $${item.precio}</li>`;
-
+document.getElementById(`importe${i}`).innerText = importe.toFixed(2);
+total += importe;
 });
 
-document.getElementById("total").innerText=total;
-
+document.getElementById("total").innerText = total.toFixed(2);
 }
 
 function enviarWhatsapp(){
+let cliente=document.getElementById("cliente").value;
+let socio=document.getElementById("socio").value;
+let correo=document.getElementById("correo").value;
+let total=document.getElementById("total").innerText;
 
-let mensaje="Hola, quiero realizar este pedido:%0A%0A";
+let mensaje=`Hola, quiero realizar este pedido Verenize:%0A%0A`;
+mensaje+=`Cliente: ${cliente}%0A`;
+mensaje+=`Socio comercial: ${socio}%0A`;
+mensaje+=`Correo: ${correo}%0A%0A`;
 
-carrito.forEach(item=>{
-mensaje+=`${item.nombre} - $${item.precio}%0A`;
+productos.forEach((p,i)=>{
+let cantPzas = Number(document.getElementById(`pzas${i}`).value) || 0;
+let cantCajas = Number(document.getElementById(`cajas${i}`).value) || 0;
+let importe = document.getElementById(`importe${i}`).innerText;
+
+if(cantPzas > 0 || cantCajas > 0){
+mensaje+=`Producto: ${p[0]}%0A`;
+if(cantPzas > 0) mensaje+=`Piezas: ${cantPzas} | Precio pieza: $${p[2]} ${p[4] ? "(10% desc.)" : ""}%0A`;
+if(cantCajas > 0) mensaje+=`Cajas: ${cantCajas} | Precio caja: $${p[1]}%0A`;
+mensaje+=`Importe: $${importe}%0A%0A`;
+}
 });
 
-mensaje+=`%0ATotal: $${total}`;
+mensaje+=`TOTAL: $${total}`;
 
-window.open(
-"https://wa.me/526621234567?text="+mensaje,
-"_blank"
-);
-
+window.open(`https://wa.me/${whatsapp}?text=${mensaje}`,"_blank");
 }
 
+function limpiar(){
+document.querySelectorAll("input[type='number']").forEach(i=>i.value=0);
+calcular();
+}
+
+cargarTabla();
+calcular();
 </script>
 
 </body>
