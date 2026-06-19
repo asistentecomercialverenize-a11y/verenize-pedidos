@@ -174,11 +174,12 @@ input[type="number"]{
         <div class="header-info">
             <input id="socio" placeholder="Socio comercial">
             <input id="fecha" type="date">
-            <div class="total-arriba">
-                TOTAL: $<span id="totalArriba">0.00</span>
-            </div>
-        </div>
+<div class="total-arriba">
+    <div>TOTAL: $<span id="totalArriba">0.00</span></div>
+    <div style="font-size:16px;font-weight:500;margin-top:5px;">
+        Total Reembolso: $<span id="reembolsoArriba">0.00</span>
     </div>
+</div>
 
     <div class="buscador">
         <input id="productoInput" list="listaProductos" placeholder="Escribe o busca un producto">
@@ -209,9 +210,12 @@ input[type="number"]{
         <tbody id="tablaPedido"></tbody>
     </table>
 
-    <div class="total-box">
-        TOTAL: $<span id="total">0.00</span>
+<div class="total-box">
+    <div>TOTAL ACUMULADO: $<span id="total">0.00</span></div>
+    <div style="font-size:18px;font-weight:500;margin-top:6px;">
+        Total Reembolso: $<span id="reembolso">0.00</span>
     </div>
+</div>
 
     <button class="enviar" onclick="enviarWhatsapp()">Enviar pedido por WhatsApp</button>
     <button class="limpiar" onclick="limpiar()">Limpiar pedido</button>
@@ -340,6 +344,47 @@ function actualizarCantidad(i){
 
 function calcular(){
     let total = 0;
+    const metaReembolso = 104400;
+
+    pedido.forEach((p,i)=>{
+        let cantidad = p.cantidad;
+
+        let cajasCompletas = Math.floor(cantidad / p.pzasCaja);
+        let piezasSueltas = cantidad % p.pzasCaja;
+
+        let importe = 0;
+
+        if(cantidad >= p.pzasCaja){
+            // Si ya alcanza caja, TODAS las piezas se calculan a precio distribuidor
+            importe = cantidad * p.precioDistribuidor;
+        }else{
+            // Si no alcanza caja, se calcula a precio subdistribuidor
+            importe = cantidad * p.precioSubdistribuidor;
+
+            if(p.descuento && cantidad > 0){
+                importe = importe * 0.90;
+            }
+        }
+
+        document.getElementById(`cajas${i}`).innerText = cajasCompletas;
+        document.getElementById(`sueltas${i}`).innerText = piezasSueltas;
+        document.getElementById(`importe${i}`).innerText = importe.toFixed(2);
+
+        total += importe;
+    });
+
+    let reembolso = 0;
+
+    if(total > metaReembolso){
+        reembolso = total - metaReembolso;
+    }
+
+    document.getElementById("total").innerText = total.toFixed(2);
+    document.getElementById("totalArriba").innerText = total.toFixed(2);
+
+    document.getElementById("reembolso").innerText = reembolso.toFixed(2);
+    document.getElementById("reembolsoArriba").innerText = reembolso.toFixed(2);
+}
 
     pedido.forEach((p,i)=>{
         let cantidad = p.cantidad;
@@ -414,7 +459,10 @@ function enviarWhatsapp(){
         }
     });
 
-    mensaje += `TOTAL: $${total}`;
+    let reembolso = document.getElementById("reembolso").innerText;
+
+mensaje += `TOTAL ACUMULADO: $${total}%0A`;
+mensaje += `TOTAL REEMBOLSO: $${reembolso}`;
 
     window.open(`https://wa.me/${whatsapp}?text=${mensaje}`,"_blank");
 }
