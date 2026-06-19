@@ -10,9 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-*{
-    font-family:'Montserrat', sans-serif;
-}
+*{font-family:'Montserrat',sans-serif;}
 
 body{
     background:#f4f4f4;
@@ -129,6 +127,18 @@ input[type="number"]{
     margin-top:6px;
 }
 
+.resumen{
+    margin-top:25px;
+    padding:15px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    background:#fafafa;
+}
+
+.resumen h3{
+    margin-top:0;
+}
+
 button{
     border:0;
     padding:13px 20px;
@@ -214,6 +224,11 @@ button{
         </div>
     </div>
 
+    <div class="resumen">
+        <h3>Resumen del Pedido</h3>
+        <div id="resumenPedido">No hay productos seleccionados.</div>
+    </div>
+
     <button class="enviar" onclick="enviarWhatsapp()">Enviar pedido por WhatsApp</button>
     <button class="limpiar" onclick="limpiar()">Limpiar pedido</button>
 
@@ -287,6 +302,7 @@ function cargarTabla(){
 
 function calcular(){
     let total = 0;
+    let resumenHTML = "";
 
     productos.forEach((p,i)=>{
         let cantidad = Number(document.getElementById(`cantidad${i}`).value) || 0;
@@ -310,8 +326,23 @@ function calcular(){
         document.getElementById(`sobrantes${i}`).innerText = sobrantes;
         document.getElementById(`importe${i}`).innerText = importe.toFixed(2);
 
+        if(cantidad > 0){
+            resumenHTML += `
+            <div style="margin-bottom:10px;">
+                <strong>${p[0]}</strong><br>
+                Cantidad: ${cantidad} pzas |
+                Cajas detectadas: ${cajasCompletas} |
+                Sobrantes: ${sobrantes} |
+                Total: $${importe.toFixed(2)}
+            </div>`;
+        }
+
         total += importe;
     });
+
+    if(resumenHTML === ""){
+        resumenHTML = "No hay productos seleccionados.";
+    }
 
     let reembolso = total > metaReembolso ? total - metaReembolso : 0;
 
@@ -319,6 +350,7 @@ function calcular(){
     document.getElementById("totalArriba").innerText = total.toFixed(2);
     document.getElementById("reembolso").innerText = reembolso.toFixed(2);
     document.getElementById("reembolsoArriba").innerText = reembolso.toFixed(2);
+    document.getElementById("resumenPedido").innerHTML = resumenHTML;
 }
 
 function filtrarProductos(){
@@ -397,4 +429,3 @@ calcular();
 
 </body>
 </html>
-```
