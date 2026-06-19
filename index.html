@@ -304,41 +304,46 @@ function calcular(){
     let total = 0;
     let resumenHTML = "";
 
-    productos.forEach((p,i)=>{
-        let cantidad = Number(document.getElementById(`cantidad${i}`).value) || 0;
+productos.forEach((p,i)=>{
+    let cantPzas = Number(document.getElementById(`cantidad${i}`).value) || 0;
+    let cantCajas = Number(document.getElementById(`cajasInput${i}`).value) || 0;
 
-        let cajasCompletas = Math.floor(cantidad / p[3]);
-        let sobrantes = cantidad % p[3];
+    let totalPiezas = cantPzas + (cantCajas * p[3]);
 
-        let importe = 0;
+    let cajasCompletas = Math.floor(totalPiezas / p[3]);
+    let sobrantes = totalPiezas % p[3];
 
-        if(cantidad >= p[3]){
-            importe = cantidad * p[1];
-        }else{
-            importe = cantidad * p[2];
+    let importe = 0;
 
-            if(p[4] && cantidad > 0){
-                importe = importe * 0.90;
-            }
+    if(totalPiezas >= p[3]){
+        importe = totalPiezas * p[1];
+    }else{
+        importe = totalPiezas * p[2];
+
+        if(p[4] && totalPiezas > 0){
+            importe = importe * 0.90;
         }
+    }
 
-        document.getElementById(`cajas${i}`).innerText = cajasCompletas;
-        document.getElementById(`sobrantes${i}`).innerText = sobrantes;
-        document.getElementById(`importe${i}`).innerText = importe.toFixed(2);
+    document.getElementById(`cajas${i}`).innerText = cajasCompletas;
+    document.getElementById(`sobrantes${i}`).innerText = sobrantes;
+    document.getElementById(`importe${i}`).innerText = importe.toFixed(2);
 
-        if(cantidad > 0){
-            resumenHTML += `
-            <div style="margin-bottom:10px;">
-                <strong>${p[0]}</strong><br>
-                Cantidad: ${cantidad} pzas |
-                Cajas detectadas: ${cajasCompletas} |
-                Sobrantes: ${sobrantes} |
-                Total: $${importe.toFixed(2)}
-            </div>`;
-        }
+    if(totalPiezas > 0){
+        resumenHTML += `
+        <div style="margin-bottom:10px;">
+            <strong>${p[0]}</strong><br>
+            Piezas sueltas capturadas: ${cantPzas} |
+            Cajas capturadas: ${cantCajas} |
+            Total piezas: ${totalPiezas} |
+            Cajas detectadas: ${cajasCompletas} |
+            Sobrantes: ${sobrantes} |
+            Total: $${importe.toFixed(2)}
+        </div>`;
+    }
 
-        total += importe;
-    });
+    total += importe;
+});
 
     if(resumenHTML === ""){
         resumenHTML = "No hay productos seleccionados.";
