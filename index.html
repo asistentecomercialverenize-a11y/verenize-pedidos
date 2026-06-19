@@ -207,6 +207,7 @@ button{
                 <th>Precio Subdistribuidor</th>
                 <th>Pzas x Caja</th>
                 <th>Cant. Pzas</th>
+                <th>Cant. Cajas</th>
                 <th>Cajas detectadas</th>
                 <th>Pzas sobrantes</th>
                 <th>Desc.</th>
@@ -289,13 +290,13 @@ function cargarTabla(){
             <td>$${p[1]}</td>
             <td>$${p[2]}</td>
             <td>${p[3]}</td>
-            <td>
-                <input type="number" min="0" value="0" id="cantidad${i}" oninput="calcular()">
-            </td>
-            <td id="cajas${i}">0</td>
-            <td id="sobrantes${i}">0</td>
-            <td>${p[4] ? "10%" : "-"}</td>
-            <td>$<span id="importe${i}">0.00</span></td>
+     <td>
+    <input type="number" min="0" value="0" id="cantidad${i}" oninput="calcular()">
+</td>
+<td>
+    <input type="number" min="0" value="0" id="cajasInput${i}" oninput="calcular()">
+</td>
+<td id="cajas${i}">0</td>
         </tr>`;
     });
 }
