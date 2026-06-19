@@ -57,15 +57,15 @@ input{
 }
 
 .total-arriba{
-    font-size:26px;
+    font-size:21px;
     font-weight:700;
     border:3px solid #111;
-    padding:12px 25px;
+    padding:12px 22px;
     background:#fafafa;
 }
 
 .reembolso-arriba{
-    font-size:16px;
+    font-size:15px;
     font-weight:500;
     margin-top:5px;
 }
@@ -111,12 +111,12 @@ td.producto{
 }
 
 input[type="number"]{
-    width:90px;
+    width:85px;
 }
 
 .total-box{
     text-align:right;
-    font-size:28px;
+    font-size:24px;
     font-weight:700;
     margin-top:20px;
 }
@@ -162,7 +162,7 @@ button{
     body{padding:8px;}
     .container{padding:12px;}
     .logo{width:260px;}
-    .total-arriba{font-size:22px;}
+    .total-arriba{font-size:18px;}
     table{font-size:12px;}
 }
 </style>
@@ -208,8 +208,6 @@ button{
                 <th>Pzas x Caja</th>
                 <th>Cant. Pzas</th>
                 <th>Cant. Cajas</th>
-                <th>Cajas detectadas</th>
-                <th>Pzas sobrantes</th>
                 <th>Desc.</th>
                 <th>Importe</th>
             </tr>
@@ -290,13 +288,14 @@ function cargarTabla(){
             <td>$${p[1]}</td>
             <td>$${p[2]}</td>
             <td>${p[3]}</td>
-     <td>
-    <input type="number" min="0" value="0" id="cantidad${i}" oninput="calcular()">
-</td>
-<td>
-    <input type="number" min="0" value="0" id="cajasInput${i}" oninput="calcular()">
-</td>
-<td id="cajas${i}">0</td>
+            <td>
+                <input type="number" min="0" value="0" id="cantidad${i}" oninput="calcular()">
+            </td>
+            <td>
+                <input type="number" min="0" value="0" id="cajasInput${i}" oninput="calcular()">
+            </td>
+            <td>${p[4] ? "10%" : "-"}</td>
+            <td>$<span id="importe${i}">0.00</span></td>
         </tr>`;
     });
 }
@@ -305,46 +304,45 @@ function calcular(){
     let total = 0;
     let resumenHTML = "";
 
-productos.forEach((p,i)=>{
-    let cantPzas = Number(document.getElementById(`cantidad${i}`).value) || 0;
-    let cantCajas = Number(document.getElementById(`cajasInput${i}`).value) || 0;
+    productos.forEach((p,i)=>{
+        let cantPzas = Number(document.getElementById(`cantidad${i}`).value) || 0;
+        let cantCajas = Number(document.getElementById(`cajasInput${i}`).value) || 0;
 
-    let totalPiezas = cantPzas + (cantCajas * p[3]);
+        let totalPiezas = cantPzas + (cantCajas * p[3]);
 
-    let cajasCompletas = Math.floor(totalPiezas / p[3]);
-    let sobrantes = totalPiezas % p[3];
+        let importe = 0;
+        let precioAplicado = "";
+        let descuentoTexto = "";
 
-    let importe = 0;
+        if(totalPiezas >= p[3]){
+            importe = totalPiezas * p[1];
+            precioAplicado = "Distribuidor";
+        }else{
+            importe = totalPiezas * p[2];
+            precioAplicado = "Subdistribuidor";
 
-    if(totalPiezas >= p[3]){
-        importe = totalPiezas * p[1];
-    }else{
-        importe = totalPiezas * p[2];
-
-        if(p[4] && totalPiezas > 0){
-            importe = importe * 0.90;
+            if(p[4] && totalPiezas > 0){
+                importe = importe * 0.90;
+                descuentoTexto = " con 10% desc.";
+            }
         }
-    }
 
-    document.getElementById(`cajas${i}`).innerText = cajasCompletas;
-    document.getElementById(`sobrantes${i}`).innerText = sobrantes;
-    document.getElementById(`importe${i}`).innerText = importe.toFixed(2);
+        document.getElementById(`importe${i}`).innerText = importe.toFixed(2);
 
-    if(totalPiezas > 0){
-        resumenHTML += `
-        <div style="margin-bottom:10px;">
-            <strong>${p[0]}</strong><br>
-            Piezas sueltas capturadas: ${cantPzas} |
-            Cajas capturadas: ${cantCajas} |
-            Total piezas: ${totalPiezas} |
-            Cajas detectadas: ${cajasCompletas} |
-            Sobrantes: ${sobrantes} |
-            Total: $${importe.toFixed(2)}
-        </div>`;
-    }
+        if(totalPiezas > 0){
+            resumenHTML += `
+            <div style="margin-bottom:10px;">
+                <strong>${p[0]}</strong><br>
+                Piezas capturadas: ${cantPzas} |
+                Cajas capturadas: ${cantCajas} |
+                Total piezas: ${totalPiezas} |
+                Precio aplicado: ${precioAplicado}${descuentoTexto} |
+                Total: $${importe.toFixed(2)}
+            </div>`;
+        }
 
-    total += importe;
-});
+        total += importe;
+    });
 
     if(resumenHTML === ""){
         resumenHTML = "No hay productos seleccionados.";
@@ -385,18 +383,18 @@ function enviarWhatsapp(){
     mensaje += `Fecha de pedido: ${fecha}%0A%0A`;
 
     productos.forEach((p,i)=>{
-        let cantidad = Number(document.getElementById(`cantidad${i}`).value) || 0;
+        let cantPzas = Number(document.getElementById(`cantidad${i}`).value) || 0;
+        let cantCajas = Number(document.getElementById(`cajasInput${i}`).value) || 0;
+        let totalPiezas = cantPzas + (cantCajas * p[3]);
         let importe = document.getElementById(`importe${i}`).innerText;
-        let cajas = document.getElementById(`cajas${i}`).innerText;
-        let sobrantes = document.getElementById(`sobrantes${i}`).innerText;
 
-        if(cantidad > 0){
+        if(totalPiezas > 0){
             mensaje += `Producto: ${p[0]}%0A`;
-            mensaje += `Cantidad total: ${cantidad} pzas%0A`;
-            mensaje += `Cajas detectadas: ${cajas}%0A`;
-            mensaje += `Piezas sobrantes: ${sobrantes}%0A`;
+            mensaje += `Piezas capturadas: ${cantPzas}%0A`;
+            mensaje += `Cajas capturadas: ${cantCajas}%0A`;
+            mensaje += `Total piezas: ${totalPiezas}%0A`;
 
-            if(cantidad >= p[3]){
+            if(totalPiezas >= p[3]){
                 mensaje += `Precio aplicado: Distribuidor $${p[1]}%0A`;
             }else{
                 mensaje += `Precio aplicado: Subdistribuidor $${p[2]}`;
@@ -421,6 +419,7 @@ function enviarWhatsapp(){
 function limpiar(){
     productos.forEach((p,i)=>{
         document.getElementById(`cantidad${i}`).value = 0;
+        document.getElementById(`cajasInput${i}`).value = 0;
     });
 
     document.getElementById("buscador").value = "";
